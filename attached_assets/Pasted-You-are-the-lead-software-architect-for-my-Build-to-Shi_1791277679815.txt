@@ -1,0 +1,409 @@
+You are the lead software architect for my Build to Ship Hackathon project.
+
+PROJECT NAME:
+CivicPulse
+
+PROBLEM STATEMENT:
+G9 – Local Government Resource Dashboard
+
+OFFICIAL PROBLEM:
+"Build a dashboard for authorities to monitor public resources, complaints, projects, and service delivery."
+
+IMPORTANT:
+This is PLANNING ONLY.
+
+DO NOT write application code.
+DO NOT create files.
+DO NOT install packages.
+DO NOT modify the project.
+DO NOT create database tables.
+DO NOT call APIs.
+DO NOT implement features.
+
+I want you to first analyze the problem and produce a complete technical implementation plan.
+
+The final application must be a real full-stack AI application, not a static UI or a simple AI chatbot.
+
+TECHNOLOGY REQUIREMENTS:
+
+Frontend:
+- React.js with Vite
+- React Router
+- Tailwind CSS
+- Lucide Icons
+- Axios or Fetch
+
+Backend:
+- Node.js
+- Express.js
+- JWT authentication
+- bcrypt password hashing
+- Zod validation
+
+Database:
+- Supabase PostgreSQL
+- Row Level Security (RLS)
+
+AI:
+- Google Gemini API
+- @google/genai SDK
+- Gemini must be called ONLY from the backend
+- Gemini responses must use structured JSON
+- Validate Gemini responses using Zod
+
+Development workflow:
+- Replit Agent for initial development
+- Google Antigravity IDE for later development/debugging
+- Git and GitHub for version control
+
+Deployment:
+- Replit Deployment OR Vercel + Render
+
+MANDATORY FEATURES:
+
+1. User registration
+2. Login
+3. Logout
+4. bcrypt password hashing
+5. JWT authentication
+6. Protected dashboard
+7. User profile
+8. Full CRUD operations
+9. Search
+10. Filtering
+11. Sorting where useful
+12. Secure REST APIs
+13. Zod input validation
+14. Authentication middleware
+15. Proper error handling
+16. Correct HTTP status codes
+17. Clean JSON responses
+18. Supabase database persistence
+19. User data isolation
+20. Backend-only Gemini integration
+21. Secure environment variables
+22. Structured Gemini JSON output
+23. AI output persistence where appropriate
+24. Responsive UI
+25. Live public deployment
+26. Public GitHub repository
+27. README
+28. .env.example without real secrets
+
+CORE MODULES:
+
+1. AUTHENTICATION
+- Registration
+- Login
+- Logout
+- JWT
+- Protected routes
+- Profile
+
+2. DASHBOARD
+Show:
+- Total resources/budget
+- Resource utilization
+- Total complaints
+- Pending complaints
+- Critical complaints
+- Active projects
+- Delayed projects
+- Service delivery score
+- Ward performance
+- Recent activity
+- AI alerts
+
+3. COMPLAINT MANAGEMENT
+Authorities can:
+- Create complaints
+- View complaints
+- Update complaints
+- Delete/archive complaints
+- Search complaints
+- Filter by ward
+- Filter by category
+- Filter by priority
+- Filter by status
+
+Gemini should analyze complaints and return:
+- Category
+- Priority
+- Department
+- Summary
+- Recommended action
+
+4. PROJECT MANAGEMENT
+CRUD for:
+- Project name
+- Description
+- Department
+- Budget
+- Amount spent
+- Progress
+- Status
+- Ward
+- Deadline
+
+5. RESOURCE MANAGEMENT
+Track:
+- Department
+- Resource name
+- Allocated amount
+- Spent amount
+- Remaining amount
+- Year
+
+6. SERVICE DELIVERY
+Track:
+- Water supply
+- Waste management
+- Street lighting
+- Roads
+- Healthcare
+
+Each service should support:
+- Coverage
+- Satisfaction
+- Status
+- Ward
+
+7. AI INSIGHTS
+Gemini should help identify:
+- High-priority complaints
+- Areas requiring attention
+- Complaint trends
+- Project risks
+- Service delivery problems
+- Recommended actions
+
+The AI must be meaningful to the local-government workflow.
+
+DATABASE PLANNING:
+
+Design a normalized Supabase PostgreSQL database.
+
+Plan these entities:
+- users
+- wards
+- complaints
+- projects
+- resources
+- services
+- ai_insights
+
+For every table specify:
+- Columns
+- Data types
+- Primary key
+- Foreign keys
+- Relationships
+- created_at
+- updated_at
+- User ownership
+- Indexes
+- RLS policies
+
+AUTHENTICATION ARCHITECTURE:
+
+Plan:
+- bcrypt password hashing
+- JWT creation
+- JWT verification
+- Authentication middleware
+- Protected API routes
+- User ownership
+- RLS
+
+GEMINI ARCHITECTURE:
+
+Plan this workflow:
+
+React
+→ Express API
+→ Gemini service
+→ Structured JSON
+→ Zod validation
+→ Supabase persistence
+→ React response
+
+Define:
+- Gemini system instructions
+- Input format
+- JSON output format
+- Zod schemas
+- Error handling
+- Gemini failure handling
+- API key protection
+
+The Gemini API key must NEVER appear in frontend code.
+
+REST API PLANNING:
+
+Design endpoints for:
+- Authentication
+- Profiles
+- Dashboard
+- Complaints
+- Projects
+- Resources
+- Services
+- AI actions
+
+For every endpoint specify:
+- HTTP method
+- URL
+- Authentication requirement
+- Request body
+- Query parameters
+- Response
+- Validation
+- HTTP status codes
+
+FRONTEND PLANNING:
+
+Pages:
+- Login
+- Register
+- Dashboard
+- Complaints
+- Projects
+- Resources
+- Services
+- AI Insights
+- Profile
+
+Plan reusable components and navigation.
+
+UI direction:
+- Professional
+- Modern
+- Government/public-service focused
+- Clean
+- Responsive
+- Accessible
+- Data-focused
+- Easy for an authority officer to understand
+
+SECURITY PLAN:
+
+Include:
+- JWT security
+- bcrypt
+- Supabase RLS
+- Zod validation
+- Authentication middleware
+- CORS
+- Rate limiting considerations
+- Environment variables
+- Secret management
+- Gemini key protection
+- .gitignore
+
+TESTING PLAN:
+
+Cover:
+- Registration
+- Login
+- Logout
+- Protected routes
+- CRUD
+- Search
+- Filtering
+- Database persistence
+- Gemini AI
+- Invalid AI output
+- Unauthorized requests
+- Error handling
+
+DEPLOYMENT PLAN:
+
+Explain:
+- Recommended deployment option
+- Frontend
+- Backend
+- Supabase
+- Environment variables
+- CORS
+- Production API URL
+- Health check
+- GitHub workflow
+- Final live testing
+
+GITHUB PLAN:
+
+Final repository must contain:
+
+/client
+/server
+.env.example
+.gitignore
+README.md
+
+Never commit:
+- .env
+- API keys
+- passwords
+- Supabase service role key
+- JWT secrets
+
+FINAL DEMO:
+
+Plan a 2–3 minute demonstration covering:
+
+1. Login
+2. Dashboard
+3. Complaint creation
+4. Gemini complaint analysis
+5. Structured AI result
+6. Supabase persistence
+7. Search/filter
+8. Project/resource monitoring
+9. AI insight/recommendation
+10. Live application
+
+IMPORTANT DEVELOPMENT PRINCIPLE:
+
+Prioritize a small number of complete, reliable workflows over many incomplete features.
+
+The core workflow should be:
+
+AUTHENTICATION
+→ DASHBOARD
+→ COMPLAINT CRUD
+→ GEMINI ANALYSIS
+→ SUPABASE PERSISTENCE
+→ AI INSIGHTS
+
+FINAL RESPONSE:
+
+Return ONLY the detailed implementation plan.
+
+Use this structure:
+
+1. Product Overview
+2. User Personas
+3. User Workflows
+4. Feature Scope
+5. Database Schema
+6. Database Relationships
+7. RLS Strategy
+8. Authentication Architecture
+9. Backend Architecture
+10. REST API Specification
+11. Gemini AI Architecture
+12. Zod Validation Strategy
+13. Frontend Architecture
+14. Page Structure
+15. Component Structure
+16. Security Plan
+17. Error Handling
+18. Testing Plan
+19. Deployment Plan
+20. Git/GitHub Plan
+21. Demo Flow
+22. Development Milestones
+23. Risks and Mitigations
+24. Definition of Done
+
+DO NOT IMPLEMENT ANYTHING YET.
