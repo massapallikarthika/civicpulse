@@ -3,14 +3,738 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: CivicPulse local government operations API
 servers:
   - url: /api
     description: Base API path
 tags:
+  - name: auth
+    description: Supabase Auth session endpoints
+  - name: profile
+    description: Officer profile
   - name: health
     description: Health operations
+  - name: dashboard
+    description: Database-backed operational summaries
+  - name: wards
+    description: Ward management
+  - name: complaints
+    description: Complaint management and AI analysis
+  - name: projects
+    description: Public project management
+  - name: resources
+    description: Department budgets and resource use
+  - name: services
+    description: Public service performance records
+  - name: insights
+    description: Validated AI-generated operational insights
 paths:
+  /auth/register:
+    post:
+      operationId: register
+      tags: [auth]
+      summary: Register an officer account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterInput"
+      responses:
+        "201":
+          description: Account created and session established
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResult"
+        "400":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Sign in
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Session established
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResult"
+        "401":
+          $ref: "#/components/responses/Error"
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: End the current session
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: Session ended
+        "401":
+          $ref: "#/components/responses/Error"
+  /auth/me:
+    get:
+      operationId: getCurrentUser
+      tags: [auth]
+      summary: Get the current authenticated officer
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Current officer profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+        "401":
+          $ref: "#/components/responses/Error"
+  /profile:
+    get:
+      operationId: getProfile
+      tags: [profile]
+      summary: Get the current officer profile
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+    patch:
+      operationId: updateProfile
+      tags: [profile]
+      summary: Update the current officer profile
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileUpdate"
+      responses:
+        "200":
+          description: Updated profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+        "422":
+          $ref: "#/components/responses/Error"
+  /dashboard:
+    get:
+      operationId: getDashboard
+      tags: [dashboard]
+      summary: Get database-backed dashboard aggregates
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+  /wards:
+    get:
+      operationId: getWards
+      tags: [wards]
+      summary: List wards
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+        - name: q
+          in: query
+          schema: { type: string, maxLength: 120 }
+      responses:
+        "200":
+          description: Ward list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WardList"
+    post:
+      operationId: createWard
+      tags: [wards]
+      summary: Create a ward
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WardInput"
+      responses:
+        "201":
+          description: Created ward
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ward"
+        "409":
+          $ref: "#/components/responses/Error"
+  /wards/{id}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    patch:
+      operationId: updateWard
+      tags: [wards]
+      summary: Update a ward
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WardUpdate"
+      responses:
+        "200":
+          description: Updated ward
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ward"
+        "404":
+          $ref: "#/components/responses/Error"
+    delete:
+      operationId: deleteWard
+      tags: [wards]
+      summary: Delete a ward without dependent records
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: Ward deleted
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+  /complaints:
+    get:
+      operationId: getComplaints
+      tags: [complaints]
+      summary: Search and filter complaints
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+        - $ref: "#/components/parameters/SortBy"
+        - $ref: "#/components/parameters/SortOrder"
+        - name: q
+          in: query
+          schema: { type: string, maxLength: 160 }
+        - name: ward_id
+          in: query
+          schema: { type: string, format: uuid }
+        - name: category
+          in: query
+          schema: { $ref: "#/components/schemas/ComplaintCategory" }
+        - name: priority
+          in: query
+          schema: { $ref: "#/components/schemas/Priority" }
+        - name: status
+          in: query
+          schema: { $ref: "#/components/schemas/ComplaintStatus" }
+        - name: department
+          in: query
+          schema: { type: string }
+        - name: from
+          in: query
+          schema: { type: string, format: date }
+        - name: to
+          in: query
+          schema: { type: string, format: date }
+      responses:
+        "200":
+          description: Complaint page
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComplaintList"
+    post:
+      operationId: createComplaint
+      tags: [complaints]
+      summary: Create a complaint
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ComplaintInput"
+      responses:
+        "201":
+          description: Created complaint
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Complaint"
+        "422":
+          $ref: "#/components/responses/Error"
+  /complaints/{id}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      operationId: getComplaint
+      tags: [complaints]
+      summary: Get a complaint
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Complaint
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Complaint"
+        "404":
+          $ref: "#/components/responses/Error"
+    patch:
+      operationId: updateComplaint
+      tags: [complaints]
+      summary: Update complaint fields or status
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ComplaintUpdate"
+      responses:
+        "200":
+          description: Updated complaint
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Complaint"
+        "404":
+          $ref: "#/components/responses/Error"
+    delete:
+      operationId: archiveComplaint
+      tags: [complaints]
+      summary: Archive a complaint
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: Complaint archived
+        "404":
+          $ref: "#/components/responses/Error"
+  /complaints/{id}/analyze:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    post:
+      operationId: analyzeComplaint
+      tags: [complaints]
+      summary: Analyze a complaint using backend Gemini integration
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Validated advisory analysis
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComplaintAnalysis"
+        "404":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/Error"
+        "429":
+          $ref: "#/components/responses/Error"
+        "502":
+          $ref: "#/components/responses/Error"
+  /projects:
+    get:
+      operationId: getProjects
+      tags: [projects]
+      summary: Search and filter projects
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+        - $ref: "#/components/parameters/SortBy"
+        - $ref: "#/components/parameters/SortOrder"
+        - name: q
+          in: query
+          schema: { type: string, maxLength: 160 }
+        - name: ward_id
+          in: query
+          schema: { type: string, format: uuid }
+        - name: department
+          in: query
+          schema: { type: string }
+        - name: status
+          in: query
+          schema: { $ref: "#/components/schemas/ProjectStatus" }
+      responses:
+        "200":
+          description: Project page
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectList"
+    post:
+      operationId: createProject
+      tags: [projects]
+      summary: Create a project
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectInput"
+      responses:
+        "201":
+          description: Created project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+        "422":
+          $ref: "#/components/responses/Error"
+  /projects/{id}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      operationId: getProject
+      tags: [projects]
+      summary: Get a project
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+        "404":
+          $ref: "#/components/responses/Error"
+    patch:
+      operationId: updateProject
+      tags: [projects]
+      summary: Update a project
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectUpdate"
+      responses:
+        "200":
+          description: Updated project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+        "404":
+          $ref: "#/components/responses/Error"
+    delete:
+      operationId: deleteProject
+      tags: [projects]
+      summary: Delete a project
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: Project deleted
+        "404":
+          $ref: "#/components/responses/Error"
+  /resources:
+    get:
+      operationId: getResources
+      tags: [resources]
+      summary: List resources and calculated balances
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+        - $ref: "#/components/parameters/SortBy"
+        - $ref: "#/components/parameters/SortOrder"
+        - name: department
+          in: query
+          schema: { type: string }
+        - name: year
+          in: query
+          schema: { type: integer, minimum: 2000, maximum: 2200 }
+      responses:
+        "200":
+          description: Resource page
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResourceList"
+    post:
+      operationId: createResource
+      tags: [resources]
+      summary: Create a resource record
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResourceInput"
+      responses:
+        "201":
+          description: Created resource
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Resource"
+        "409":
+          $ref: "#/components/responses/Error"
+  /resources/{id}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      operationId: getResource
+      tags: [resources]
+      summary: Get a resource
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Resource
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Resource"
+        "404":
+          $ref: "#/components/responses/Error"
+    patch:
+      operationId: updateResource
+      tags: [resources]
+      summary: Update a resource
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResourceUpdate"
+      responses:
+        "200":
+          description: Updated resource
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Resource"
+        "404":
+          $ref: "#/components/responses/Error"
+    delete:
+      operationId: deleteResource
+      tags: [resources]
+      summary: Delete a resource
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: Resource deleted
+        "404":
+          $ref: "#/components/responses/Error"
+  /services:
+    get:
+      operationId: getServices
+      tags: [services]
+      summary: Search and filter service records
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+        - $ref: "#/components/parameters/SortBy"
+        - $ref: "#/components/parameters/SortOrder"
+        - name: ward_id
+          in: query
+          schema: { type: string, format: uuid }
+        - name: service_type
+          in: query
+          schema: { $ref: "#/components/schemas/ServiceType" }
+        - name: status
+          in: query
+          schema: { $ref: "#/components/schemas/ServiceStatus" }
+        - name: reporting_period
+          in: query
+          schema: { type: string, format: date }
+      responses:
+        "200":
+          description: Service page
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceList"
+    post:
+      operationId: createService
+      tags: [services]
+      summary: Create a service performance record
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ServiceInput"
+      responses:
+        "201":
+          description: Created service record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Service"
+        "409":
+          $ref: "#/components/responses/Error"
+  /services/{id}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      operationId: getService
+      tags: [services]
+      summary: Get a service record
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Service record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Service"
+        "404":
+          $ref: "#/components/responses/Error"
+    patch:
+      operationId: updateService
+      tags: [services]
+      summary: Update a service record
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ServiceUpdate"
+      responses:
+        "200":
+          description: Updated service record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Service"
+        "404":
+          $ref: "#/components/responses/Error"
+    delete:
+      operationId: deleteService
+      tags: [services]
+      summary: Delete a service record
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: Service record deleted
+        "404":
+          $ref: "#/components/responses/Error"
+  /ai-insights:
+    get:
+      operationId: getAiInsights
+      tags: [insights]
+      summary: List saved AI insights
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+        - name: status
+          in: query
+          schema: { $ref: "#/components/schemas/InsightStatus" }
+        - name: kind
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: Saved insights
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InsightList"
+  /ai-insights/generate:
+    post:
+      operationId: generateAiInsights
+      tags: [insights]
+      summary: Generate insights from bounded owner-scoped database records
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InsightGenerateInput"
+      responses:
+        "200":
+          description: Validated, persisted insight set
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InsightGenerateResult"
+        "429":
+          $ref: "#/components/responses/Error"
+        "502":
+          $ref: "#/components/responses/Error"
+  /ai-insights/{id}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    patch:
+      operationId: updateAiInsight
+      tags: [insights]
+      summary: Acknowledge or dismiss an insight
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InsightUpdate"
+      responses:
+        "200":
+          description: Updated insight
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiInsight"
+        "404":
+          $ref: "#/components/responses/Error"
   /healthz:
     get:
       operationId: healthCheck
@@ -24,13 +748,487 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /health:
+    get:
+      operationId: getHealth
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy or degraded service status without private configuration
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    Page:
+      name: page
+      in: query
+      schema: { type: integer, minimum: 1, default: 1 }
+    PageSize:
+      name: page_size
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+    SortBy:
+      name: sort_by
+      in: query
+      schema: { type: string }
+    SortOrder:
+      name: sort_order
+      in: query
+      schema: { type: string, enum: [asc, desc], default: desc }
+  responses:
+    Error:
+      description: Request could not be completed
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
   schemas:
     HealthStatus:
       type: object
       properties:
         status:
           type: string
+        database:
+          type: string
+          enum: [connected, unavailable, not_configured]
       required:
         - status
+    ApiError:
+      type: object
+      properties:
+        error: { type: string }
+        code: { type: string }
+        issues:
+          type: array
+          items:
+            type: object
+            properties:
+              field: { type: string }
+              message: { type: string }
+            required: [field, message]
+      required: [error]
+    Pagination:
+      type: object
+      properties:
+        page: { type: integer }
+        page_size: { type: integer }
+        total: { type: integer }
+        total_pages: { type: integer }
+      required: [page, page_size, total, total_pages]
+    RegisterInput:
+      type: object
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, minLength: 8, maxLength: 128 }
+        full_name: { type: string, minLength: 1, maxLength: 120 }
+      required: [email, password, full_name]
+    LoginInput:
+      type: object
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, minLength: 1, maxLength: 128 }
+      required: [email, password]
+    AuthResult:
+      type: object
+      properties:
+        user: { $ref: "#/components/schemas/Profile" }
+      required: [user]
+    Profile:
+      type: object
+      properties:
+        user_id: { type: string, format: uuid }
+        email: { type: string, format: email }
+        full_name: { type: string }
+        department: { type: ["string", "null"] }
+        title: { type: ["string", "null"] }
+        timezone: { type: string }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+      required: [user_id, email, full_name, timezone, created_at, updated_at]
+    ProfileUpdate:
+      type: object
+      properties:
+        full_name: { type: string, minLength: 1, maxLength: 120 }
+        department: { type: ["string", "null"], maxLength: 120 }
+        title: { type: ["string", "null"], maxLength: 120 }
+        timezone: { type: string, maxLength: 80 }
+    Ward:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        code: { type: ["string", "null"] }
+        description: { type: ["string", "null"] }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+      required: [id, name, created_at, updated_at]
+    WardInput:
+      type: object
+      properties:
+        name: { type: string, minLength: 1, maxLength: 120 }
+        code: { type: ["string", "null"], maxLength: 40 }
+        description: { type: ["string", "null"], maxLength: 500 }
+      required: [name]
+    WardUpdate:
+      type: object
+      properties:
+        name: { type: string, minLength: 1, maxLength: 120 }
+        code: { type: ["string", "null"], maxLength: 40 }
+        description: { type: ["string", "null"], maxLength: 500 }
+    WardList:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: "#/components/schemas/Ward" }
+        pagination: { $ref: "#/components/schemas/Pagination" }
+      required: [data, pagination]
+    ComplaintCategory:
+      type: string
+      enum: [water_supply, sanitation, roads, street_lighting, healthcare, public_safety, other]
+    Priority:
+      type: string
+      enum: [low, medium, high, critical]
+    ComplaintStatus:
+      type: string
+      enum: [open, acknowledged, in_progress, resolved, closed]
+    Complaint:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        ward_id: { type: string, format: uuid }
+        ward_name: { type: ["string", "null"] }
+        title: { type: string }
+        description: { type: string }
+        category: { $ref: "#/components/schemas/ComplaintCategory" }
+        priority: { $ref: "#/components/schemas/Priority" }
+        department: { type: ["string", "null"] }
+        status: { $ref: "#/components/schemas/ComplaintStatus" }
+        ai_summary: { type: ["string", "null"] }
+        ai_recommended_action: { type: ["string", "null"] }
+        ai_model: { type: ["string", "null"] }
+        ai_analyzed_at: { type: ["string", "null"], format: date-time }
+        archived_at: { type: ["string", "null"], format: date-time }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+      required: [id, ward_id, title, description, category, priority, status, created_at, updated_at]
+    ComplaintInput:
+      type: object
+      properties:
+        ward_id: { type: string, format: uuid }
+        title: { type: string, minLength: 3, maxLength: 160 }
+        description: { type: string, minLength: 10, maxLength: 5000 }
+        category: { $ref: "#/components/schemas/ComplaintCategory" }
+        priority: { $ref: "#/components/schemas/Priority" }
+        department: { type: ["string", "null"], maxLength: 120 }
+      required: [ward_id, title, description]
+    ComplaintUpdate:
+      type: object
+      properties:
+        ward_id: { type: string, format: uuid }
+        title: { type: string, minLength: 3, maxLength: 160 }
+        description: { type: string, minLength: 10, maxLength: 5000 }
+        category: { $ref: "#/components/schemas/ComplaintCategory" }
+        priority: { $ref: "#/components/schemas/Priority" }
+        department: { type: ["string", "null"], maxLength: 120 }
+        status: { $ref: "#/components/schemas/ComplaintStatus" }
+    ComplaintAnalysis:
+      type: object
+      properties:
+        category: { $ref: "#/components/schemas/ComplaintCategory" }
+        priority: { $ref: "#/components/schemas/Priority" }
+        department: { type: string, minLength: 1, maxLength: 120 }
+        summary: { type: string, minLength: 1, maxLength: 1000 }
+        recommended_action: { type: string, minLength: 1, maxLength: 1500 }
+        confidence: { type: number, minimum: 0, maximum: 1 }
+        model: { type: string }
+        prompt_version: { type: string }
+      required: [category, priority, department, summary, recommended_action, confidence, model, prompt_version]
+    ComplaintList:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: "#/components/schemas/Complaint" }
+        pagination: { $ref: "#/components/schemas/Pagination" }
+      required: [data, pagination]
+    ProjectStatus:
+      type: string
+      enum: [planned, active, on_hold, completed, cancelled]
+    Project:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        ward_id: { type: ["string", "null"], format: uuid }
+        ward_name: { type: ["string", "null"] }
+        name: { type: string }
+        description: { type: ["string", "null"] }
+        department: { type: string }
+        budget: { type: number, minimum: 0 }
+        amount_spent: { type: number, minimum: 0 }
+        progress: { type: integer, minimum: 0, maximum: 100 }
+        status: { $ref: "#/components/schemas/ProjectStatus" }
+        deadline: { type: ["string", "null"], format: date }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+      required: [id, name, department, budget, amount_spent, progress, status, created_at, updated_at]
+    ProjectInput:
+      type: object
+      properties:
+        ward_id: { type: ["string", "null"], format: uuid }
+        name: { type: string, minLength: 1, maxLength: 160 }
+        description: { type: ["string", "null"], maxLength: 2000 }
+        department: { type: string, minLength: 1, maxLength: 120 }
+        budget: { type: number, minimum: 0 }
+        amount_spent: { type: number, minimum: 0 }
+        progress: { type: integer, minimum: 0, maximum: 100 }
+        status: { $ref: "#/components/schemas/ProjectStatus" }
+        deadline: { type: ["string", "null"], format: date }
+      required: [name, department, budget, amount_spent, progress, status]
+    ProjectUpdate:
+      type: object
+      properties:
+        ward_id: { type: ["string", "null"], format: uuid }
+        name: { type: string, minLength: 1, maxLength: 160 }
+        description: { type: ["string", "null"], maxLength: 2000 }
+        department: { type: string, minLength: 1, maxLength: 120 }
+        budget: { type: number, minimum: 0 }
+        amount_spent: { type: number, minimum: 0 }
+        progress: { type: integer, minimum: 0, maximum: 100 }
+        status: { $ref: "#/components/schemas/ProjectStatus" }
+        deadline: { type: ["string", "null"], format: date }
+    ProjectList:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: "#/components/schemas/Project" }
+        pagination: { $ref: "#/components/schemas/Pagination" }
+      required: [data, pagination]
+    Resource:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        department: { type: string }
+        name: { type: string }
+        allocated_amount: { type: number, minimum: 0 }
+        spent_amount: { type: number, minimum: 0 }
+        remaining_amount: { type: number }
+        year: { type: integer }
+        currency_code: { type: string, minLength: 3, maxLength: 3 }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+      required: [id, department, name, allocated_amount, spent_amount, remaining_amount, year, currency_code, created_at, updated_at]
+    ResourceInput:
+      type: object
+      properties:
+        department: { type: string, minLength: 1, maxLength: 120 }
+        name: { type: string, minLength: 1, maxLength: 160 }
+        allocated_amount: { type: number, minimum: 0 }
+        spent_amount: { type: number, minimum: 0 }
+        year: { type: integer, minimum: 2000, maximum: 2200 }
+        currency_code: { type: string, minLength: 3, maxLength: 3 }
+      required: [department, name, allocated_amount, spent_amount, year, currency_code]
+    ResourceUpdate:
+      type: object
+      properties:
+        department: { type: string, minLength: 1, maxLength: 120 }
+        name: { type: string, minLength: 1, maxLength: 160 }
+        allocated_amount: { type: number, minimum: 0 }
+        spent_amount: { type: number, minimum: 0 }
+        year: { type: integer, minimum: 2000, maximum: 2200 }
+        currency_code: { type: string, minLength: 3, maxLength: 3 }
+    ResourceList:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: "#/components/schemas/Resource" }
+        pagination: { $ref: "#/components/schemas/Pagination" }
+      required: [data, pagination]
+    ServiceType:
+      type: string
+      enum: [water, waste_management, roads, street_lights, healthcare]
+    ServiceStatus:
+      type: string
+      enum: [good, needs_attention, critical, unavailable]
+    Service:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        ward_id: { type: string, format: uuid }
+        ward_name: { type: ["string", "null"] }
+        service_type: { $ref: "#/components/schemas/ServiceType" }
+        coverage: { type: number, minimum: 0, maximum: 100 }
+        satisfaction: { type: number, minimum: 0, maximum: 100 }
+        status: { $ref: "#/components/schemas/ServiceStatus" }
+        reporting_period: { type: string, format: date }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+      required: [id, ward_id, service_type, coverage, satisfaction, status, reporting_period, created_at, updated_at]
+    ServiceInput:
+      type: object
+      properties:
+        ward_id: { type: string, format: uuid }
+        service_type: { $ref: "#/components/schemas/ServiceType" }
+        coverage: { type: number, minimum: 0, maximum: 100 }
+        satisfaction: { type: number, minimum: 0, maximum: 100 }
+        status: { $ref: "#/components/schemas/ServiceStatus" }
+        reporting_period: { type: string, format: date }
+      required: [ward_id, service_type, coverage, satisfaction, status, reporting_period]
+    ServiceUpdate:
+      type: object
+      properties:
+        ward_id: { type: string, format: uuid }
+        service_type: { $ref: "#/components/schemas/ServiceType" }
+        coverage: { type: number, minimum: 0, maximum: 100 }
+        satisfaction: { type: number, minimum: 0, maximum: 100 }
+        status: { $ref: "#/components/schemas/ServiceStatus" }
+        reporting_period: { type: string, format: date }
+    ServiceList:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: "#/components/schemas/Service" }
+        pagination: { $ref: "#/components/schemas/Pagination" }
+      required: [data, pagination]
+    InsightStatus:
+      type: string
+      enum: [new, acknowledged, dismissed]
+    Insight:
+      type: object
+      properties:
+        issue: { type: string }
+        severity: { type: string, enum: [low, medium, high, critical] }
+        evidence:
+          type: array
+          items: { type: string }
+        recommendation: { type: string }
+      required: [issue, severity, evidence, recommendation]
+    AiInsight:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        kind: { type: string }
+        title: { type: string }
+        summary: { type: string }
+        recommended_action: { type: string }
+        payload:
+          type: array
+          items: { $ref: "#/components/schemas/Insight" }
+        source_type: { type: ["string", "null"] }
+        source_scope: { type: object, additionalProperties: true }
+        model: { type: string }
+        prompt_version: { type: string }
+        status: { $ref: "#/components/schemas/InsightStatus" }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+      required: [id, kind, title, summary, recommended_action, payload, model, prompt_version, status, created_at, updated_at]
+    InsightList:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: "#/components/schemas/AiInsight" }
+        pagination: { $ref: "#/components/schemas/Pagination" }
+      required: [data, pagination]
+    InsightGenerateInput:
+      type: object
+      properties:
+        ward_id: { type: ["string", "null"], format: uuid }
+        department: { type: ["string", "null"], maxLength: 120 }
+        from: { type: ["string", "null"], format: date }
+        to: { type: ["string", "null"], format: date }
+    InsightGenerateResult:
+      type: object
+      properties:
+        insights:
+          type: array
+          items: { $ref: "#/components/schemas/AiInsight" }
+      required: [insights]
+    InsightUpdate:
+      type: object
+      properties:
+        status: { type: string, enum: [acknowledged, dismissed] }
+      required: [status]
+    ActivityEvent:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        entity_type: { type: string }
+        entity_id: { type: string, format: uuid }
+        action: { type: string }
+        summary: { type: string }
+        created_at: { type: string, format: date-time }
+      required: [id, entity_type, action, summary, created_at]
+    DashboardSummary:
+      type: object
+      properties:
+        complaints:
+          type: object
+          properties:
+            total: { type: integer }
+            pending: { type: integer }
+            high_critical: { type: integer }
+            by_priority:
+              type: array
+              items:
+                type: object
+                properties:
+                  priority: { $ref: "#/components/schemas/Priority" }
+                  count: { type: integer }
+                required: [priority, count]
+          required: [total, pending, high_critical, by_priority]
+        projects:
+          type: object
+          properties:
+            active: { type: integer }
+            delayed: { type: integer }
+            average_progress: { type: number }
+          required: [active, delayed, average_progress]
+        resources:
+          type: object
+          properties:
+            allocated: { type: number }
+            spent: { type: number }
+            remaining: { type: number }
+            currency_code: { type: string }
+          required: [allocated, spent, remaining, currency_code]
+        services:
+          type: object
+          properties:
+            average_coverage: { type: number }
+            average_satisfaction: { type: number }
+          required: [average_coverage, average_satisfaction]
+        ward_performance:
+          type: array
+          items:
+            type: object
+            properties:
+              ward_id: { type: string, format: uuid }
+              ward_name: { type: string }
+              open_complaints: { type: integer }
+              service_score: { type: number }
+            required: [ward_id, ward_name, open_complaints, service_score]
+        recent_activity:
+          type: array
+          items: { $ref: "#/components/schemas/ActivityEvent" }
+        ai_insights:
+          type: array
+          items: { $ref: "#/components/schemas/AiInsight" }
+      required: [complaints, projects, resources, services, ward_performance, recent_activity, ai_insights]
 

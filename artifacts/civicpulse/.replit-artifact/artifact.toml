@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "CivicPulse"
+description = "An AI-powered local government operations dashboard for managing complaints, wards, projects, budgets, and public service delivery, with backend-validated Gemini analysis and secure user-scoped data."
+version = "1.0.0"
+id = "artifacts/civicpulse"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 20389
+
+[services.development]
+run = "pnpm --filter @workspace/civicpulse run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/civicpulse", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/civicpulse/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "20389"
+BASE_PATH = "/"
