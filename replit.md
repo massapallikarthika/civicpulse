@@ -1,44 +1,60 @@
-# [Project name]
+# CivicPulse
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+CivicPulse is a municipal operations dashboard for complaints, wards, projects, budgets, and AI-assisted insights.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- Use Replit's managed workflows to run the app:
+  - `artifacts/civicpulse: web` — React/Vite frontend at `/`, local port 20389.
+  - `artifacts/api-server: API Server` — Express API at `/api`, local port 8080.
+- Workflows provide `PORT` and the frontend's `BASE_PATH`. Do not run the frontend dev command without these.
+- `pnpm install --frozen-lockfile` — restore dependencies.
 - `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
+- `pnpm --filter @workspace/api-server run build` — build the backend
+- `PORT=20389 BASE_PATH=/ pnpm --filter @workspace/civicpulse run build` — build the frontend
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- `/api/healthz` — server health endpoint (does not check Supabase).
+- Required for sign-in and stored data: `SUPABASE_URL` and `SUPABASE_ANON_KEY`, supplied through Replit Secrets.
+- Required for AI analysis: `GEMINI_API_KEY`, supplied through Replit Secrets.
+- Apply `supabase/migrations/202610060001_civicpulse_core.sql` to the intended Supabase project if it has not already been applied. It includes tables, row-level access policies, and supporting functions. Do not apply migrations to an unknown or production database without approval.
+- The shared Drizzle package is present in the import, but CivicPulse's active routes use Supabase; no replacement database is needed.
 
 ## Stack
 
-- pnpm workspaces, Node.js 24, TypeScript 5.9
+- pnpm workspaces, imported Node.js 20 runtime, TypeScript 5.9
 - API: Express 5
-- DB: PostgreSQL + Drizzle ORM
+- Data and authentication: Supabase
+- Frontend: React 19, Vite 7, Tailwind CSS
 - Validation: Zod (`zod/v4`), `drizzle-zod`
 - API codegen: Orval (from OpenAPI spec)
-- Build: esbuild (CJS bundle)
+- Build: esbuild (backend ESM bundle), Vite (frontend)
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/civicpulse/` — web frontend.
+- `artifacts/api-server/` — backend routes, session handling, Supabase access, and Gemini analysis.
+- `lib/api-spec/openapi.yaml` — API contract; generated clients and validation live in sibling library packages.
+- `supabase/migrations/` — Supabase schema and access policies.
+- `artifacts/mockup-sandbox/` — imported design sandbox; not needed to run CivicPulse.
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- Preserve the imported stack and folder structure. Register existing artifact definitions rather than scaffolding replacements.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+Officers can manage municipal operations and review AI-generated recommendations. Protected screens require a real Supabase session.
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+The import setup request is to get the existing app running on Replit with minimal changes.
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- A healthy API and visible sign-in page do not mean Supabase has been configured. Without its settings, sign-in requests return an explicit configuration error.
+- An unauthenticated `/api/auth/me` request returns 401 by design.
+- Supabase's client warns that Node.js 20 is deprecated; upgrade the runtime before a future client release drops support.
+- The dependency override for `proxy-addr` uses its current patch release because the imported lockfile's older version was blocked by the package firewall.
 
 ## Pointers
 
