@@ -23,7 +23,7 @@ CivicPulse is a municipal operations dashboard for complaints, wards, projects, 
 
 ## Stack
 
-- pnpm workspaces, imported Node.js 20 runtime, TypeScript 5.9
+- pnpm workspaces, Node.js 22 runtime, TypeScript 5.9
 - API: Express 5
 - Data and authentication: Supabase
 - Frontend: React 19, Vite 7, Tailwind CSS
@@ -55,7 +55,7 @@ The import setup request is to get the existing app running on Replit with minim
 
 - A healthy API and visible sign-in page do not mean Supabase has been configured. Without its settings, sign-in requests return an explicit configuration error.
 - An unauthenticated `/api/auth/me` request returns 401 by design.
-- Supabase's client warns that Node.js 20 is deprecated; upgrade the runtime before a future client release drops support.
+- Keep the runtime on Node.js 22 or later: the installed Supabase SDK initializes Realtime's native WebSocket when creating a client.
 - The dependency override for `proxy-addr` uses its current patch release because the imported lockfile's older version was blocked by the package firewall.
 
 ## Pointers

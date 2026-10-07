@@ -57,7 +57,7 @@ These workflows set their own `PORT` (and `BASE_PATH` for Vite). The API health 
 
 ## Local development
 
-Requirements: Node.js 20+ and pnpm 10.
+Requirements: Node.js 22+ and pnpm 10.
 
 ```sh
 pnpm install --frozen-lockfile
