@@ -1,0 +1,175 @@
+Complete a final CivicPulse production-readiness pass. Fix the existing issues and populate the application with realistic persistent demo data. Do not change the existing database schema, authentication architecture, or unrelated functionality.
+
+IMPORTANT: Use the existing Supabase schema, APIs, RLS policies, and the currently authenticated user's user_id. Do not bypass RLS, expose secrets, hard-code database data into the frontend, or create a second database.
+
+1. FIX DASHBOARD SCROLLING / NAVIGATION
+- Fix the current UX bug where scrolling with the mouse/touchpad can accidentally navigate between pages such as Complaints, Projects, Wards, etc.
+- The left sidebar must remain fixed.
+- Only the main content area should scroll.
+- Mouse wheel, touchpad scrolling, and normal touch scrolling must scroll the current page instead of triggering navigation.
+- Preserve all existing routes and sidebar navigation.
+- Verify Dashboard, Complaints, Projects, Services, Wards, Resources, and AI Insights pages.
+
+2. POPULATE WARDS
+Create 10 realistic persistent wards for the currently authenticated user:
+- Ward 1 through Ward 10
+- realistic population values
+- use the existing wards table and correct user_id
+- preserve RLS and user isolation
+- verify the Ward dropdown in Complaints displays all 10 wards.
+
+3. POPULATE PROJECTS
+Create 6 realistic municipal projects covering:
+- Road improvement
+- Water supply upgrade
+- Street lighting
+- Waste management
+- Community healthcare
+- Drainage improvement
+
+Each project should have realistic:
+- name
+- description
+- department
+- ward
+- budget
+- spent amount
+- progress percentage
+- status
+- deadline
+
+Use a mix of Active, Completed, and Delayed statuses.
+
+4. POPULATE SERVICES
+Create 8 realistic municipal services:
+- Water Supply
+- Waste Management
+- Street Lighting
+- Roads
+- Healthcare
+- Sanitation
+- Drainage
+- Public Transport
+
+Include realistic:
+- ward
+- coverage percentage
+- citizen satisfaction
+- status
+
+5. POPULATE RESOURCES
+Create at least 6 realistic municipal resource records across different departments.
+
+Include:
+- department
+- resource name/type
+- allocated amount
+- spent amount
+- remaining amount
+- year
+
+Use realistic Indian/municipal ₹ values.
+
+6. POPULATE COMPLAINTS
+Create 8 realistic complaints across different wards and categories.
+
+Use a realistic mix of:
+- Critical
+- High
+- Medium
+- Low
+
+Use statuses:
+- Open
+- In Progress
+- Resolved
+
+Include:
+- title
+- description
+- ward
+- category
+- responsible department
+- priority
+- status
+
+Make sure the records are persisted in Supabase and appear in the Complaints page.
+
+7. AI INSIGHTS
+Use the existing AI Insights architecture.
+
+If AI insight records are generated through the existing Gemini/API workflow, analyze the actual seeded complaints, projects, services, and resource data.
+
+Generate useful insights such as:
+- high-priority complaint patterns
+- project delays
+- service coverage problems
+- wards needing attention
+- resource/budget risks
+- recommended actions
+
+Do NOT invent statistics unrelated to the actual database records.
+
+If the existing AI workflow requires the user to click an Analyze button, make sure that workflow works with the seeded data. Do not create fake AI output just for appearance.
+
+8. DASHBOARD
+After the demo data is created, verify that the dashboard automatically shows non-zero real values for:
+- Open complaints
+- Active projects
+- Budget remaining
+- Service coverage
+- Complaint priority chart
+- Resource position
+- recent activity/insights where supported
+
+Make sure all dashboard values come from persisted Supabase data.
+
+9. CRUD VERIFICATION
+Verify that existing CRUD functionality still works for:
+- Complaints
+- Projects
+- Services
+- Resources
+- Wards
+
+Verify create, read, update, delete where supported by the existing implementation.
+
+10. AUTHENTICATION & SECURITY
+Do not modify the working authentication unless required.
+Keep:
+- Supabase Auth
+- protected routes
+- user-specific data isolation
+- RLS
+- secure backend API
+- Gemini API key backend-only
+- environment secrets protected
+
+11. FINAL TEST
+Run a focused production-readiness test:
+- registration/login/session
+- dashboard
+- sidebar navigation
+- scrolling
+- wards dropdown
+- complaints CRUD
+- projects CRUD
+- services
+- resources
+- AI Insights/Gemini
+- Supabase persistence
+- error handling
+
+Fix only issues that are necessary for these requirements.
+
+Do not make unrelated redesigns.
+Do not remove existing functionality.
+Do not expose credentials.
+Do not bypass RLS.
+Do not create duplicate schemas or duplicate tables.
+
+At the end, report:
+1. What was fixed
+2. What demo data was created
+3. Which features were verified
+4. Any remaining blocker that must be handled before publishing.
