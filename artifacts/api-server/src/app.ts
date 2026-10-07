@@ -36,11 +36,19 @@ app.use((req, res, next) => {
     next();
     return;
   }
+
   const origin = req.get("origin");
   const host = req.get("host");
+  
+  const allowedOrigins = process.env.FRONTEND_URL
+  ? [process.env.FRONTEND_URL]
+  : [];
+
   if (origin && host) {
     try {
-      if (new URL(origin).host !== host) {
+      const originHost = new URL(origin).host;
+
+      if (originHost !== host && !allowedOrigins.includes(origin)) {
         res.status(403).json({ error: "Cross-origin requests are not allowed." });
         return;
       }
@@ -49,6 +57,7 @@ app.use((req, res, next) => {
       return;
     }
   }
+
   next();
 });
 
