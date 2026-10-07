@@ -16,7 +16,9 @@ CivicPulse is a municipal operations dashboard for complaints, wards, projects, 
 - `/api/healthz` — server health endpoint (does not check Supabase).
 - Required for sign-in and stored data: `SUPABASE_URL` and `SUPABASE_ANON_KEY`, supplied through Replit Secrets.
 - Required for AI analysis: `GEMINI_API_KEY`, supplied through Replit Secrets.
-- Apply `supabase/migrations/202610060001_civicpulse_core.sql` to the intended Supabase project if it has not already been applied. It includes tables, row-level access policies, and supporting functions. Do not apply migrations to an unknown or production database without approval.
+- The configured Supabase URL is reachable, but Supabase's Data API currently returns `PGRST205` for `profiles`, `wards`, and `complaints`. The app's data features are blocked until the migration is applied or the schema is otherwise made visible to PostgREST.
+- Review `supabase/migrations/202610060001_civicpulse_core.sql` against the intended Supabase project's existing schema and policies before applying it in the Supabase SQL Editor. It creates tables/functions, replaces named triggers and policies, and provisions profiles for existing users. Do not apply it to an unknown or production database without a backup and review.
+- Authenticated `/api/dashboard` calls `public.civicpulse_dashboard_summary()`; its contract and validation are shared with the generated API client.
 - The shared Drizzle package is present in the import, but CivicPulse's active routes use Supabase; no replacement database is needed.
 
 ## Stack

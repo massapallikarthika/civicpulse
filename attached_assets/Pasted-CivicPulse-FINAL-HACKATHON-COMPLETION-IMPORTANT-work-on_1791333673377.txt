@@ -1,0 +1,174 @@
+CivicPulse FINAL HACKATHON COMPLETION — IMPORTANT: work on the EXISTING imported project. DO NOT rebuild from scratch and DO NOT unnecessarily redesign or replace working code.
+
+We need this application ready for submission TODAY before 4 PM.
+
+First inspect the existing codebase, package.json, React frontend, Express backend, Supabase integration, authentication, database migrations, Gemini integration, routes, and current runtime state.
+
+Then immediately IMPLEMENT/FIX everything necessary to make the existing CivicPulse application functional and production-ready.
+
+PRIORITY ORDER:
+
+1. GET THE APPLICATION RUNNING
+- Fix build/runtime/startup errors.
+- Fix frontend/backend API connection issues.
+- Fix any environment-variable/configuration issues.
+- Do not expose or print secret values.
+
+2. SUPABASE DATABASE
+- Verify Supabase connection.
+- Verify migrations and required tables.
+- Fix database errors, including any previous HTTP 502 database request issue.
+- Ensure queries use the actual existing schema.
+- Ensure database CRUD operations work.
+- Use the existing Supabase secrets already configured in Replit.
+- Do not ask me to paste secrets into chat.
+
+3. AUTHENTICATION
+- Verify registration, login, logout and protected routes.
+- Fix authentication failures.
+- Verify user sessions/tokens.
+- Fix Supabase email confirmation/redirect configuration in code if necessary.
+- Do not hardcode localhost as the production authentication URL.
+- Never expose credentials or private keys.
+
+4. CIVICPULSE CORE FEATURES
+Make sure these actually work with real database data:
+
+DASHBOARD:
+- total complaints
+- pending/critical complaints
+- active/delayed projects
+- resources/budget information
+- service performance
+- ward performance
+- recent activity
+- AI insights/alerts
+
+COMPLAINTS:
+- Create
+- Read/List
+- Update
+- Delete
+- Search
+- Filter
+- Sort
+- AI analysis
+
+PROJECTS:
+- Create
+- Read
+- Update
+- Delete
+- budget
+- spent
+- progress
+- status
+- ward
+- deadline
+
+RESOURCES:
+- CRUD
+- allocated
+- spent
+- remaining
+- department
+- year
+
+SERVICES:
+- CRUD
+- water
+- waste
+- street lights
+- roads
+- healthcare
+- ward
+- coverage
+- satisfaction
+- status
+
+WARDS:
+- ward name
+- population
+- service score
+- CRUD where already supported
+
+If the database has no records, show proper empty states. DO NOT fabricate statistics.
+
+5. GEMINI AI
+- Gemini must be called ONLY from the backend.
+- Use the existing GEMINI_API_KEY secret.
+- Never expose the API key to the frontend.
+- Verify the existing @google/genai integration.
+- Fix broken AI requests.
+- Use structured JSON responses.
+- Validate AI output with the existing Zod validation or add Zod where necessary.
+- AI should analyze actual CivicPulse data.
+- Support complaint categorization, priority, department, summary and recommended action.
+- Support AI insights such as high-priority complaints, project risks, service problems and wards needing attention.
+- NEVER invent statistics or pretend missing data exists.
+- Handle AI errors gracefully.
+
+6. API + SECURITY
+- Verify all important REST endpoints.
+- Use correct HTTP status codes and JSON responses.
+- Validate request bodies/parameters with Zod where appropriate.
+- Protect authenticated endpoints.
+- Prevent unauthorized CRUD/data access.
+- Fix unsafe or broken queries.
+- Do not expose stack traces or secrets.
+- Check that service-role/database credentials are never sent to the browser.
+
+7. FRONTEND
+- Make sure React routing works.
+- Login/register works.
+- Dashboard works.
+- Complaints/projects/resources/services/wards/AI pages work.
+- Forms submit correctly.
+- Loading/error/empty states work.
+- Fix console errors and broken API calls.
+- Keep the existing CivicPulse design; only make necessary UI fixes.
+- Ensure the app is responsive enough for the hackathon demo.
+
+8. ENVIRONMENT
+- Inspect the environment variables currently used by the project.
+- Keep using Replit Secrets.
+- Create/update .env.example if needed, containing ONLY variable names/placeholders and NEVER real credentials.
+- Make sure no secrets are committed to GitHub.
+
+9. TEST EVERYTHING
+After making changes:
+- run the application
+- run/build the frontend
+- verify backend startup
+- test database access
+- test authentication
+- test major CRUD APIs
+- test Gemini integration
+- fix errors found during testing
+- repeat until the application is in the best working state possible.
+
+10. HACKATHON DELIVERY
+Prepare the project for final submission:
+- production build must work
+- README should clearly explain CivicPulse, problem, solution, features, tech stack, Supabase database, Gemini AI, security and setup
+- include concise architecture explanation
+- include AI integration explanation
+- make sure GitHub contains no secrets
+- prepare the project for deployment
+- if deployment can be completed from the current environment, deploy the working application and verify the public URL.
+
+IMPORTANT:
+Do not spend time on unnecessary visual redesign.
+Do not create duplicate implementations.
+Do not replace working features.
+Do not use fake/mock data where real Supabase data is expected.
+Do not ask me to create another prompt.
+Do not stop after analyzing problems — actually fix them.
+Prioritize a WORKING, DEPLOYABLE CivicPulse application over optional improvements.
+
+At the end, give me a concise summary of:
+1. what was fixed
+2. what was tested
+3. whether the app is ready for deployment/submission
+4. the live URL if deployment succeeded
+5. anything critical that still needs manual action.

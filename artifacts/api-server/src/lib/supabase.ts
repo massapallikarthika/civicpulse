@@ -40,6 +40,13 @@ export function mapSupabaseError(error: {
   message?: string;
 }): HttpError {
   const code = error.code ?? "SUPABASE_ERROR";
+  if (code === "PGRST204" || code === "PGRST205" || code === "42P01") {
+    return new HttpError(
+      "CivicPulse's database schema is not available through Supabase yet. Apply the reviewed CivicPulse migration and make sure the public schema is exposed through the Data API.",
+      503,
+      "DATABASE_SCHEMA_NOT_READY",
+    );
+  }
   if (code === "23505") {
     return new HttpError("A record with these details already exists.", 409, code);
   }
