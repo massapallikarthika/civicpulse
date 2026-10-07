@@ -1,0 +1,1 @@
+- [Supabase Node runtime](supabase-node-runtime.md) — keep CivicPulse on Node 22+; current Supabase Realtime initializes native WebSocket during client creation.
