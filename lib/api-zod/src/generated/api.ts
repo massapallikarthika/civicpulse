@@ -221,6 +221,9 @@ export const GetWardsResponse = zod.object({
   "name": zod.string(),
   "code": zod.string().nullish(),
   "description": zod.string().nullish(),
+  "latitude": zod.number().min(-90).max(90).nullish(),
+  "longitude": zod.number().min(-180).max(180).nullish(),
+  "location_name": zod.string().nullish(),
   "created_at": zod.coerce.date(),
   "updated_at": zod.coerce.date()
 })),
@@ -247,7 +250,10 @@ export const createWardBodyDescriptionMax = 500;
 export const CreateWardBody = zod.object({
   "name": zod.string().min(1).max(createWardBodyNameMax),
   "code": zod.string().max(createWardBodyCodeMax).nullish(),
-  "description": zod.string().max(createWardBodyDescriptionMax).nullish()
+  "description": zod.string().max(createWardBodyDescriptionMax).nullish(),
+  "latitude": zod.number().min(-90).max(90).nullish(),
+  "longitude": zod.number().min(-180).max(180).nullish(),
+  "location_name": zod.string().max(200).nullish()
 })
 
 export const CreateWardResponse = zod.object({
@@ -255,6 +261,9 @@ export const CreateWardResponse = zod.object({
   "name": zod.string(),
   "code": zod.string().nullish(),
   "description": zod.string().nullish(),
+  "latitude": zod.number().min(-90).max(90).nullish(),
+  "longitude": zod.number().min(-180).max(180).nullish(),
+  "location_name": zod.string().nullish(),
   "created_at": zod.coerce.date(),
   "updated_at": zod.coerce.date()
 })
@@ -278,7 +287,10 @@ export const updateWardBodyDescriptionMax = 500;
 export const UpdateWardBody = zod.object({
   "name": zod.string().min(1).max(updateWardBodyNameMax).optional(),
   "code": zod.string().max(updateWardBodyCodeMax).nullish(),
-  "description": zod.string().max(updateWardBodyDescriptionMax).nullish()
+  "description": zod.string().max(updateWardBodyDescriptionMax).nullish(),
+  "latitude": zod.number().min(-90).max(90).nullish(),
+  "longitude": zod.number().min(-180).max(180).nullish(),
+  "location_name": zod.string().max(200).nullish()
 })
 
 export const UpdateWardResponse = zod.object({
@@ -286,6 +298,9 @@ export const UpdateWardResponse = zod.object({
   "name": zod.string(),
   "code": zod.string().nullish(),
   "description": zod.string().nullish(),
+  "latitude": zod.number().min(-90).max(90).nullish(),
+  "longitude": zod.number().min(-180).max(180).nullish(),
+  "location_name": zod.string().nullish(),
   "created_at": zod.coerce.date(),
   "updated_at": zod.coerce.date()
 })
@@ -340,6 +355,9 @@ export const GetComplaintsResponse = zod.object({
   "priority": zod.enum(['low', 'medium', 'high', 'critical']),
   "department": zod.string().nullish(),
   "status": zod.enum(['open', 'acknowledged', 'in_progress', 'resolved', 'closed']),
+  "latitude": zod.number().min(-90).max(90).nullish(),
+  "longitude": zod.number().min(-180).max(180).nullish(),
+  "location_name": zod.string().nullish(),
   "ai_summary": zod.string().nullish(),
   "ai_recommended_action": zod.string().nullish(),
   "ai_model": zod.string().nullish(),
@@ -376,7 +394,10 @@ export const CreateComplaintBody = zod.object({
   "description": zod.string().min(createComplaintBodyDescriptionMin).max(createComplaintBodyDescriptionMax),
   "category": zod.enum(['water_supply', 'sanitation', 'roads', 'street_lighting', 'healthcare', 'public_safety', 'other']).optional(),
   "priority": zod.enum(['low', 'medium', 'high', 'critical']).optional(),
-  "department": zod.string().max(createComplaintBodyDepartmentMax).nullish()
+  "department": zod.string().max(createComplaintBodyDepartmentMax).nullish(),
+  "latitude": zod.number().min(-90).max(90).nullish(),
+  "longitude": zod.number().min(-180).max(180).nullish(),
+  "location_name": zod.string().max(200).nullish()
 })
 
 export const CreateComplaintResponse = zod.object({
@@ -389,6 +410,9 @@ export const CreateComplaintResponse = zod.object({
   "priority": zod.enum(['low', 'medium', 'high', 'critical']),
   "department": zod.string().nullish(),
   "status": zod.enum(['open', 'acknowledged', 'in_progress', 'resolved', 'closed']),
+  "latitude": zod.number().min(-90).max(90).nullish(),
+  "longitude": zod.number().min(-180).max(180).nullish(),
+  "location_name": zod.string().nullish(),
   "ai_summary": zod.string().nullish(),
   "ai_recommended_action": zod.string().nullish(),
   "ai_model": zod.string().nullish(),
@@ -416,6 +440,9 @@ export const GetComplaintResponse = zod.object({
   "priority": zod.enum(['low', 'medium', 'high', 'critical']),
   "department": zod.string().nullish(),
   "status": zod.enum(['open', 'acknowledged', 'in_progress', 'resolved', 'closed']),
+  "latitude": zod.number().min(-90).max(90).nullish(),
+  "longitude": zod.number().min(-180).max(180).nullish(),
+  "location_name": zod.string().nullish(),
   "ai_summary": zod.string().nullish(),
   "ai_recommended_action": zod.string().nullish(),
   "ai_model": zod.string().nullish(),
@@ -450,7 +477,10 @@ export const UpdateComplaintBody = zod.object({
   "category": zod.enum(['water_supply', 'sanitation', 'roads', 'street_lighting', 'healthcare', 'public_safety', 'other']).optional(),
   "priority": zod.enum(['low', 'medium', 'high', 'critical']).optional(),
   "department": zod.string().max(updateComplaintBodyDepartmentMax).nullish(),
-  "status": zod.enum(['open', 'acknowledged', 'in_progress', 'resolved', 'closed']).optional()
+  "status": zod.enum(['open', 'acknowledged', 'in_progress', 'resolved', 'closed']).optional(),
+  "latitude": zod.number().min(-90).max(90).nullish(),
+  "longitude": zod.number().min(-180).max(180).nullish(),
+  "location_name": zod.string().max(200).nullish()
 })
 
 export const UpdateComplaintResponse = zod.object({

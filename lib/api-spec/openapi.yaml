@@ -872,6 +872,9 @@ components:
         name: { type: string }
         code: { type: ["string", "null"] }
         description: { type: ["string", "null"] }
+        latitude: { type: ["number", "null"], minimum: -90, maximum: 90 }
+        longitude: { type: ["number", "null"], minimum: -180, maximum: 180 }
+        location_name: { type: ["string", "null"] }
         created_at: { type: string, format: date-time }
         updated_at: { type: string, format: date-time }
       required: [id, name, created_at, updated_at]
@@ -881,6 +884,9 @@ components:
         name: { type: string, minLength: 1, maxLength: 120 }
         code: { type: ["string", "null"], maxLength: 40 }
         description: { type: ["string", "null"], maxLength: 500 }
+        latitude: { type: ["number", "null"], minimum: -90, maximum: 90 }
+        longitude: { type: ["number", "null"], minimum: -180, maximum: 180 }
+        location_name: { type: ["string", "null"], maxLength: 200 }
       required: [name]
     WardUpdate:
       type: object
@@ -888,6 +894,9 @@ components:
         name: { type: string, minLength: 1, maxLength: 120 }
         code: { type: ["string", "null"], maxLength: 40 }
         description: { type: ["string", "null"], maxLength: 500 }
+        latitude: { type: ["number", "null"], minimum: -90, maximum: 90 }
+        longitude: { type: ["number", "null"], minimum: -180, maximum: 180 }
+        location_name: { type: ["string", "null"], maxLength: 200 }
     WardList:
       type: object
       properties:
@@ -917,6 +926,9 @@ components:
         priority: { $ref: "#/components/schemas/Priority" }
         department: { type: ["string", "null"] }
         status: { $ref: "#/components/schemas/ComplaintStatus" }
+        latitude: { type: ["number", "null"], minimum: -90, maximum: 90 }
+        longitude: { type: ["number", "null"], minimum: -180, maximum: 180 }
+        location_name: { type: ["string", "null"] }
         ai_summary: { type: ["string", "null"] }
         ai_recommended_action: { type: ["string", "null"] }
         ai_model: { type: ["string", "null"] }
@@ -934,6 +946,9 @@ components:
         category: { $ref: "#/components/schemas/ComplaintCategory" }
         priority: { $ref: "#/components/schemas/Priority" }
         department: { type: ["string", "null"], maxLength: 120 }
+        latitude: { type: ["number", "null"], minimum: -90, maximum: 90 }
+        longitude: { type: ["number", "null"], minimum: -180, maximum: 180 }
+        location_name: { type: ["string", "null"], maxLength: 200 }
       required: [ward_id, title, description]
     ComplaintUpdate:
       type: object
@@ -945,6 +960,9 @@ components:
         priority: { $ref: "#/components/schemas/Priority" }
         department: { type: ["string", "null"], maxLength: 120 }
         status: { $ref: "#/components/schemas/ComplaintStatus" }
+        latitude: { type: ["number", "null"], minimum: -90, maximum: 90 }
+        longitude: { type: ["number", "null"], minimum: -180, maximum: 180 }
+        location_name: { type: ["string", "null"], maxLength: 200 }
     ComplaintAnalysis:
       type: object
       properties:
@@ -982,6 +1000,9 @@ components:
         progress: { type: integer, minimum: 0, maximum: 100 }
         status: { $ref: "#/components/schemas/ProjectStatus" }
         deadline: { type: ["string", "null"], format: date }
+        latitude: { type: ["number", "null"], minimum: -90, maximum: 90 }
+        longitude: { type: ["number", "null"], minimum: -180, maximum: 180 }
+        location_name: { type: ["string", "null"] }
         created_at: { type: string, format: date-time }
         updated_at: { type: string, format: date-time }
       required: [id, name, department, budget, amount_spent, progress, status, created_at, updated_at]
@@ -997,6 +1018,9 @@ components:
         progress: { type: integer, minimum: 0, maximum: 100 }
         status: { $ref: "#/components/schemas/ProjectStatus" }
         deadline: { type: ["string", "null"], format: date }
+        latitude: { type: ["number", "null"], minimum: -90, maximum: 90 }
+        longitude: { type: ["number", "null"], minimum: -180, maximum: 180 }
+        location_name: { type: ["string", "null"], maxLength: 200 }
       required: [name, department, budget, amount_spent, progress, status]
     ProjectUpdate:
       type: object
@@ -1010,6 +1034,9 @@ components:
         progress: { type: integer, minimum: 0, maximum: 100 }
         status: { $ref: "#/components/schemas/ProjectStatus" }
         deadline: { type: ["string", "null"], format: date }
+        latitude: { type: ["number", "null"], minimum: -90, maximum: 90 }
+        longitude: { type: ["number", "null"], minimum: -180, maximum: 180 }
+        location_name: { type: ["string", "null"], maxLength: 200 }
     ProjectList:
       type: object
       properties:

@@ -17,7 +17,7 @@ import type { Ward, Complaint, ComplaintStatus, Project, Resource, Service } fro
 import {
   Activity, AlertCircle, AlertTriangle, ArrowLeft, ArrowRight, ArrowUpRight,
   Check, CheckCircle2, ChevronLeft, ChevronRight, CircleHelp,
-  ClipboardList, Clock3, FolderKanban, Gauge, Landmark, Lightbulb, LogOut, Map,
+  ClipboardList, Clock3, Eye, EyeOff, FolderKanban, Gauge, Landmark, Lightbulb, LogOut, Map,
   Menu, MoreHorizontal, Pencil, Plus, RefreshCw, Search, Settings2,
   ShieldCheck, Sparkles, Trash2, Wallet, X, type LucideIcon,
 } from 'lucide-react';
@@ -86,7 +86,7 @@ function AuthPage({ mode }: { mode: 'login' | 'register' }) {
     <form onSubmit={submit} className="form-stack">
       {mode === 'register' && <Field name="full_name" label="Full name" required placeholder="Your name" autoComplete="name"/>}
       <Field name="email" label="Work email" required type="email" placeholder="you@municipality.gov" autoComplete="email"/>
-      <Field name="password" label="Password" required type="password" placeholder="At least 8 characters" autoComplete={mode === 'login' ? 'current-password' : 'new-password'} minLength={8}/>
+      <PasswordField name="password" label="Password" required placeholder="At least 8 characters" autoComplete={mode === 'login' ? 'current-password' : 'new-password'} minLength={8}/>
       <button className="button primary full" disabled={busy}>{busy ? <><span className="mini-loader"/> {mode === 'login' ? 'Signing in…' : 'Creating account…'}</> : <>{mode === 'login' ? 'Sign in' : 'Create account'} <ArrowRight size={17}/></>}</button>
     </form><p className="auth-switch">{mode === 'login' ? 'New to CivicPulse?' : 'Already have an account?'} <Link to={mode === 'login' ? '/register' : '/login'}>{mode === 'login' ? 'Create an account' : 'Sign in'}</Link></p>
     <div className="auth-note"><ShieldCheck size={16}/><span>Your information stays within your municipality’s secure session.</span></div>
@@ -141,6 +141,10 @@ function Button({ children, onClick, variant = 'secondary', disabled, type = 'bu
 function Field({ label: caption, name, required, type = 'text', placeholder, defaultValue, value, onChange, min, max, step, autoComplete, minLength, disabled }: any) {
   return <label className="field"><span>{caption}{required && <i> *</i>}</span><input name={name} required={required} type={type} placeholder={placeholder} defaultValue={defaultValue} value={value} onChange={onChange} min={min} max={max} step={step} autoComplete={autoComplete} minLength={minLength} disabled={disabled}/></label>;
 }
+function PasswordField({ label: caption, name, required, placeholder, autoComplete, minLength }: any) {
+  const [visible, setVisible] = useState(false);
+  return <label className="field"><span>{caption}{required && <i> *</i>}</span><div className="field-pw"><input name={name} required={required} type={visible ? 'text' : 'password'} placeholder={placeholder} autoComplete={autoComplete} minLength={minLength}/><button type="button" aria-label={visible ? 'Hide password' : 'Show password'} onClick={() => setVisible(v => !v)}>{visible ? <EyeOff size={15}/> : <Eye size={15}/>}</button></div></label>;
+}
 function SelectField({ label: caption, name, options, value, defaultValue, onChange, required }: any) {
   return <label className="field"><span>{caption}{required && <i> *</i>}</span><select name={name} value={value} defaultValue={defaultValue} onChange={onChange} required={required}>{options.map((o: any) => <option value={o.value} key={o.value}>{o.label}</option>)}</select></label>;
 }
@@ -167,10 +171,12 @@ function StatCard({ icon: Icon, label: title, value, note, accent }: any) {
 }
 
 function Dashboard() {
-  const q = useGetDashboard(); const d: any = q.data; const currency = d?.resources?.currency_code || 'USD';
+  const q = useGetDashboard(); const d: any = q.data; const currency = d?.resources?.currency_code || 'INR';
   const priorities = d?.complaints?.by_priority || []; const totalPriority = Math.max(1, priorities.reduce((s: number, x: any) => s + x.count, 0));
   const prioritiesOrder = ['critical', 'high', 'medium', 'low'];
-  return <><PageHeading title="Good morning" detail="Here’s the current picture across your municipality." action={<span className="date-chip"><Clock3 size={15}/>{new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })}</span>}/>
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  return <><PageHeading title={greeting} detail="Here’s the current picture across your municipality." action={<span className="date-chip"><Clock3 size={15}/>{new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })}</span>}/>
     <QueryState loading={q.isLoading} error={q.isError} retry={() => q.refetch()} empty={!d}>
       <><div className="stat-grid">
         <StatCard icon={ClipboardList} label="Open complaints" value={d?.complaints?.pending} note={`${d?.complaints?.high_critical ?? '—'} high priority`} accent="coral"/>
@@ -198,19 +204,35 @@ function Complaints() {
     <Panel className="table-panel"><QueryState loading={q.isLoading} error={q.isError} retry={() => q.refetch()} empty={!records.length}><div className="table-wrap"><table><thead><tr><th>Complaint</th><th>Ward</th><th>Category</th><th>Priority</th><th>Status</th><th>Received</th><th><span className="sr-only">Actions</span></th></tr></thead><tbody>{records.map(c => <tr key={c.id}><td><Link className="table-primary" to={`/complaints/${c.id}`}>{c.title}</Link><small className="table-secondary">{c.department || label(c.category)}</small></td><td>{c.ward_name || '—'}</td><td>{label(c.category)}</td><td><Badge value={c.priority}/></td><td><Badge value={c.status}/></td><td>{date(c.created_at)}</td><td><button aria-label={`Archive ${c.title}`} className="icon-button" disabled={!!c.archived_at || archive.isPending} onClick={() => archiveRecord(c.id)}><Trash2 size={16}/></button></td></tr>)}</tbody></table></div></QueryState>
       {!!records.length && <div className="pagination"><span>Page {pagination?.page || page} of {pagination?.total_pages || 1} <i>·</i> {pagination?.total ?? records.length} total</span><div><Button disabled={page <= 1} onClick={() => setPage(Math.max(1, page - 1))}><ChevronLeft size={16}/> Previous</Button><Button disabled={page >= (pagination?.total_pages || 1)} onClick={() => setPage(page + 1)}>Next <ChevronRight size={16}/></Button></div></div>}
     </Panel>
-    {showCreate && <Modal title="Log a complaint" description="Capture the concern with enough context for a useful response." close={() => setShowCreate(false)} wide><ComplaintForm wards={wardsQ.data?.data || []} busy={create.isPending} onSubmit={createRecord} onCancel={() => setShowCreate(false)}/></Modal>}
+    {showCreate && <Modal title="Log a complaint" description="Capture the concern with enough context for a useful response." close={() => setShowCreate(false)} wide><ComplaintForm wards={wardsQ.data?.data || []} wardsLoading={wardsQ.isLoading} busy={create.isPending} onSubmit={createRecord} onCancel={() => setShowCreate(false)}/></Modal>}
   </>;
 }
-function ComplaintForm({ wards, busy, onSubmit, onCancel }: any) {
-  const submit = (e: FormEvent<HTMLFormElement>) => { e.preventDefault(); const fd = new FormData(e.currentTarget); const d: any = Object.fromEntries(fd.entries()); onSubmit({ ...d, department: d.department || null }); };
+function ComplaintForm({ wards, wardsLoading, busy, onSubmit, onCancel }: any) {
+  const submit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    const d: any = Object.fromEntries(fd.entries());
+    if (!d.ward_id) return;
+    onSubmit({ ...d, department: d.department || null });
+  };
   return <form className="form-stack modal-form" onSubmit={submit}><div className="form-grid">
     <Field name="title" label="Complaint title" required placeholder="Briefly describe the issue"/>
-    <SelectField name="ward_id" label="Ward" required options={[{ value: '', label: 'Select a ward' }, ...wards.map((w: Ward) => ({ value: w.id, label: w.name }))]}/>
+    <label className="field">
+      <span>Ward <i> *</i></span>
+      <select name="ward_id" required>
+        {wardsLoading
+          ? <option value="">Loading wards…</option>
+          : wards.length === 0
+            ? <option value="">No wards yet — create one first</option>
+            : <><option value="">Select a ward</option>{wards.map((w: Ward) => <option key={w.id} value={w.id}>{w.name}</option>)}</>
+        }
+      </select>
+    </label>
     <SelectField name="category" label="Category" options={['other', 'water_supply', 'sanitation', 'roads', 'street_lighting', 'healthcare', 'public_safety'].map(x => ({ value: x, label: label(x) }))}/>
     <SelectField name="priority" label="Priority" options={['medium', 'low', 'high', 'critical'].map(x => ({ value: x, label: label(x) }))}/>
     <Field name="department" label="Responsible department" placeholder="Optional"/>
     <label className="field full-span"><span>Description *</span><textarea name="description" required minLength={10} placeholder="What happened, where, and when? Include details that will help the response team." rows={4}/></label></div>
-    <div className="modal-actions"><Button onClick={onCancel}>Cancel</Button><Button type="submit" variant="primary" disabled={busy}>{busy ? 'Saving…' : 'Submit complaint'} <ArrowRight size={16}/></Button></div></form>;
+    <div className="modal-actions"><Button onClick={onCancel}>Cancel</Button><Button type="submit" variant="primary" disabled={busy || wardsLoading || wards.length === 0}>{busy ? 'Saving…' : 'Submit complaint'} <ArrowRight size={16}/></Button></div></form>;
 }
 
 function ComplaintDetail() {
@@ -250,12 +272,12 @@ function EntityPage({ title, description, query, records, fields, columns, creat
 function Projects() {
   const q = useGetProjects({ page: 1, page_size: 100 }); const wards = useGetWards({ page_size: 100 }); const create = useCreateProject(); const update = useUpdateProject(); const del = useDeleteProject();
   const wardOptions = (wards.data?.data || []).map((w: Ward) => ({ value: w.id, label: w.name }));
-  const fields: FieldDef[] = [{ name: 'name', label: 'Project name', required: true }, { name: 'department', label: 'Department', required: true }, { name: 'ward_id', label: 'Ward', options: [{ value: '', label: 'No ward assigned' }, ...wardOptions] }, { name: 'budget', label: 'Budget', numeric: true, required: true, min: 0 }, { name: 'amount_spent', label: 'Amount spent', numeric: true, required: true, min: 0 }, { name: 'progress', label: 'Progress (%)', numeric: true, required: true, min: 0, max: 100 }, { name: 'status', label: 'Status', options: ['planned','active','on_hold','completed','cancelled'] }, { name: 'deadline', label: 'Deadline', type: 'date' }, { name: 'description', label: 'Description' }];
-  return <EntityPage title="Projects" description="Track delivery, progress and approved project budgets." query={q} records={q.data?.data || []} fields={fields} createRecord={create.mutateAsync} updateRecord={(id: string, data: any) => update.mutateAsync({ id, data })} deleteRecord={(id: string) => del.mutateAsync({ id })} invalidate={getGetProjectsQueryKey({ page: 1, page_size: 100 })} saving={create.isPending || update.isPending} emptyMessage="Create a project to track municipal delivery." columns={[{ label: 'Project', key: 'name', render: (r: Project) => <><b className="table-primary">{r.name}</b><small className="table-secondary">{r.department}</small></> }, { label: 'Ward', key: 'ward_name' }, { label: 'Budget', render: (r: Project) => money(r.budget) }, { label: 'Progress', render: (r: Project) => <div className="table-progress"><span><i style={{ width: `${r.progress}%` }}/></span><b>{r.progress}%</b></div> }, { label: 'Status', render: (r: Project) => <Badge value={r.status}/> }, { label: 'Deadline', render: (r: Project) => date(r.deadline) }]}/>;
+  const fields: FieldDef[] = [{ name: 'name', label: 'Project name', required: true }, { name: 'department', label: 'Department', required: true }, { name: 'ward_id', label: 'Ward', options: [{ value: '', label: 'No ward assigned' }, ...wardOptions] }, { name: 'budget', label: 'Budget (₹)', numeric: true, required: true, min: 0 }, { name: 'amount_spent', label: 'Amount spent (₹)', numeric: true, required: true, min: 0 }, { name: 'progress', label: 'Progress (%)', numeric: true, required: true, min: 0, max: 100 }, { name: 'status', label: 'Status', options: ['planned','active','on_hold','completed','cancelled'] }, { name: 'deadline', label: 'Deadline', type: 'date' }, { name: 'description', label: 'Description' }];
+  return <EntityPage title="Projects" description="Track delivery, progress and approved project budgets." query={q} records={q.data?.data || []} fields={fields} createRecord={create.mutateAsync} updateRecord={(id: string, data: any) => update.mutateAsync({ id, data })} deleteRecord={(id: string) => del.mutateAsync({ id })} invalidate={getGetProjectsQueryKey({ page: 1, page_size: 100 })} saving={create.isPending || update.isPending} emptyMessage="Create a project to track municipal delivery." columns={[{ label: 'Project', key: 'name', render: (r: Project) => <><b className="table-primary">{r.name}</b><small className="table-secondary">{r.department}</small></> }, { label: 'Ward', key: 'ward_name' }, { label: 'Budget', render: (r: Project) => money(r.budget, 'INR') }, { label: 'Progress', render: (r: Project) => <div className="table-progress"><span><i style={{ width: `${r.progress}%` }}/></span><b>{r.progress}%</b></div> }, { label: 'Status', render: (r: Project) => <Badge value={r.status}/> }, { label: 'Deadline', render: (r: Project) => date(r.deadline) }]}/>;
 }
 function Resources() {
   const q = useGetResources({ page: 1, page_size: 100 }); const create = useCreateResource(); const update = useUpdateResource(); const del = useDeleteResource(); const rows = q.data?.data || [];
-  const fields: FieldDef[] = [{ name: 'department', label: 'Department', required: true }, { name: 'name', label: 'Allocation name', required: true }, { name: 'allocated_amount', label: 'Allocated amount', numeric: true, required: true, min: 0 }, { name: 'spent_amount', label: 'Spent amount', numeric: true, required: true, min: 0 }, { name: 'year', label: 'Fiscal year', numeric: true, required: true, min: 2000, max: 2200 }, { name: 'currency_code', label: 'Currency code', required: true }];
+  const fields: FieldDef[] = [{ name: 'department', label: 'Department', required: true }, { name: 'name', label: 'Allocation name', required: true }, { name: 'allocated_amount', label: 'Allocated amount', numeric: true, required: true, min: 0 }, { name: 'spent_amount', label: 'Spent amount', numeric: true, required: true, min: 0 }, { name: 'year', label: 'Fiscal year', numeric: true, required: true, min: 2000, max: 2200 }, { name: 'currency_code', label: 'Currency', required: true, options: [{ value: 'INR', label: '₹ INR — Indian Rupee' }, { value: 'USD', label: '$ USD — US Dollar' }, { value: 'EUR', label: '€ EUR — Euro' }, { value: 'GBP', label: '£ GBP — British Pound' }] }];
   return <><div className="ledger-summary">{rows.length > 0 && <div><span>Current allocation</span><b>{money(rows.reduce((n, r) => n + r.allocated_amount, 0), rows[0]?.currency_code)}</b></div>}{rows.length > 0 && <div><span>Committed spend</span><b>{money(rows.reduce((n, r) => n + r.spent_amount, 0), rows[0]?.currency_code)}</b></div>}{rows.length > 0 && <div><span>Available balance</span><b>{money(rows.reduce((n, r) => n + r.remaining_amount, 0), rows[0]?.currency_code)}</b></div>}</div>
     <EntityPage title="Resources" description="Maintain budget allocations and available balances by department." query={q} records={rows} fields={fields} createRecord={create.mutateAsync} updateRecord={(id: string, data: any) => update.mutateAsync({ id, data })} deleteRecord={(id: string) => del.mutateAsync({ id })} invalidate={getGetResourcesQueryKey({ page: 1, page_size: 100 })} saving={create.isPending || update.isPending} emptyMessage="Add an allocation to establish a visible balance." columns={[{ label: 'Allocation', key: 'name', render: (r: Resource) => <><b className="table-primary">{r.name}</b><small className="table-secondary">{r.department} · FY {r.year}</small></> }, { label: 'Allocated', render: (r: Resource) => money(r.allocated_amount, r.currency_code) }, { label: 'Spent', render: (r: Resource) => money(r.spent_amount, r.currency_code) }, { label: 'Remaining', render: (r: Resource) => <b className="balance-value">{money(r.remaining_amount, r.currency_code)}</b> }, { label: 'Utilization', render: (r: Resource) => <div className="table-progress"><span><i style={{ width: `${r.allocated_amount ? Math.min(100, r.spent_amount / r.allocated_amount * 100) : 0}%` }}/></span><b>{r.allocated_amount ? Math.round(r.spent_amount / r.allocated_amount * 100) : 0}%</b></div> }]}/>
   </>;
@@ -263,7 +285,10 @@ function Resources() {
 function Services() {
   const q = useGetServices({ page: 1, page_size: 100 }); const wards = useGetWards({ page_size: 100 }); const create = useCreateService(); const update = useUpdateService(); const del = useDeleteService();
   const wardOpts = (wards.data?.data || []).map((w: Ward) => ({ value: w.id, label: w.name }));
-  const fields: FieldDef[] = [{ name: 'ward_id', label: 'Ward', options: wardOpts, required: true }, { name: 'service_type', label: 'Service type', options: ['water','waste_management','roads','street_lights','healthcare'] }, { name: 'coverage', label: 'Coverage (%)', numeric: true, required: true, min: 0, max: 100 }, { name: 'satisfaction', label: 'Satisfaction (%)', numeric: true, required: true, min: 0, max: 100 }, { name: 'status', label: 'Status', options: ['good','needs_attention','critical','unavailable'] }, { name: 'reporting_period', label: 'Reporting period', required: true }];
+  const wardOptsWithPlaceholder = wardOpts.length > 0
+    ? wardOpts
+    : [{ value: '', label: wards.isLoading ? 'Loading wards…' : 'No wards yet — create one first' }];
+  const fields: FieldDef[] = [{ name: 'ward_id', label: 'Ward', options: wardOptsWithPlaceholder, required: true }, { name: 'service_type', label: 'Service type', options: ['water','waste_management','roads','street_lights','healthcare'] }, { name: 'coverage', label: 'Coverage (%)', numeric: true, required: true, min: 0, max: 100 }, { name: 'satisfaction', label: 'Satisfaction (%)', numeric: true, required: true, min: 0, max: 100 }, { name: 'status', label: 'Status', options: ['good','needs_attention','critical','unavailable'] }, { name: 'reporting_period', label: 'Reporting period', required: true, type: 'date' }];
   return <EntityPage title="Services" description="Measure essential service coverage, satisfaction and condition." query={q} records={q.data?.data || []} fields={fields} createRecord={create.mutateAsync} updateRecord={(id: string, data: any) => update.mutateAsync({ id, data })} deleteRecord={(id: string) => del.mutateAsync({ id })} invalidate={getGetServicesQueryKey({ page: 1, page_size: 100 })} saving={create.isPending || update.isPending} emptyMessage="No service records yet. Add a ward service assessment." columns={[{ label: 'Service', render: (r: Service) => <><b className="table-primary">{label(r.service_type)}</b><small className="table-secondary">{r.ward_name || 'Ward not named'}</small></> }, { label: 'Coverage', render: (r: Service) => <div className="table-progress"><span><i style={{ width: `${r.coverage}%` }}/></span><b>{r.coverage}%</b></div> }, { label: 'Satisfaction', render: (r: Service) => `${r.satisfaction}%` }, { label: 'Status', render: (r: Service) => <Badge value={r.status}/> }, { label: 'Period', key: 'reporting_period' }]}/>;
 }
 function Wards() {
