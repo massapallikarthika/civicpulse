@@ -87,12 +87,35 @@ function sortDirection(order: "asc" | "desc") {
   return order === "asc";
 }
 
+const WARD_COLUMNS =
+  "id,name,code,description,latitude,longitude,location_name,created_at,updated_at";
+
+function normalizeWardPayload(input: unknown): unknown {
+  if (!input || typeof input !== "object" || Array.isArray(input)) return input;
+  const body = { ...(input as Record<string, unknown>) };
+  for (const key of ["code", "description", "location_name"] as const) {
+    if (body[key] === "") body[key] = null;
+  }
+  for (const key of ["latitude", "longitude"] as const) {
+    const value = body[key];
+    if (value === "" || value === undefined) {
+      if (key in body) body[key] = null;
+      continue;
+    }
+    if (typeof value === "string") {
+      const parsed = Number(value);
+      if (Number.isFinite(parsed)) body[key] = parsed;
+    }
+  }
+  return body;
+}
+
 router.get("/wards", async (req, res): Promise<void> => {
   const session = getSession(req);
   const params = parseWith(GetWardsQueryParams, req.query, "ward filters");
   let query = session.client
     .from("wards")
-    .select("id,name,code,description,created_at,updated_at", { count: "exact" })
+    .select(WARD_COLUMNS, { count: "exact" })
     .eq("user_id", session.user.id)
     .order("name", { ascending: true });
   const search = params.q ? sanitizeSearch(params.q) : "";
@@ -108,11 +131,11 @@ router.get("/wards", async (req, res): Promise<void> => {
 
 router.post("/wards", async (req, res): Promise<void> => {
   const session = getSession(req);
-  const body = parseWith(CreateWardBody, req.body, "ward");
+  const body = parseWith(CreateWardBody, normalizeWardPayload(req.body), "ward");
   const { data, error } = await session.client
     .from("wards")
     .insert({ ...body, user_id: session.user.id })
-    .select("id,name,code,description,created_at,updated_at")
+    .select(WARD_COLUMNS)
     .single();
   if (error) throw mapSupabaseError(error);
   res.status(201).json(validateOutput(CreateWardResponse, data));
@@ -121,13 +144,13 @@ router.post("/wards", async (req, res): Promise<void> => {
 router.patch("/wards/:id", async (req, res): Promise<void> => {
   const session = getSession(req);
   const { id } = parseWith(UpdateWardParams, req.params, "ward id");
-  const body = parseWith(UpdateWardBody, req.body, "ward update");
+  const body = parseWith(UpdateWardBody, normalizeWardPayload(req.body), "ward update");
   const { data, error } = await session.client
     .from("wards")
     .update(body)
     .eq("id", id)
     .eq("user_id", session.user.id)
-    .select("id,name,code,description,created_at,updated_at")
+    .select(WARD_COLUMNS)
     .maybeSingle();
   if (error) throw mapSupabaseError(error);
   if (!data) notFound();
